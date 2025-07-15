@@ -236,11 +236,7 @@ export default function Header() {
               className="h-10 w-10 object-contain"
             />
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-green-500 to-purple-600 bg-clip-text text-transparent mr-8">
-<<<<<<< HEAD
               ZENITH SHOP
-=======
-              제니스 몰
->>>>>>> 0b8dbf164d05d0cff9870f873b92cd90c531adb2
             </span>
           </Link>
 
