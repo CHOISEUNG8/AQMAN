@@ -52,11 +52,7 @@ export default function Footer() {
                 />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
-<<<<<<< HEAD
                 ZENITH SHOP
-=======
-                제니스 몰
->>>>>>> 0b8dbf164d05d0cff9870f873b92cd90c531adb2
               </span>
             </Link>
             <p className="text-sm text-gray-300 leading-relaxed">

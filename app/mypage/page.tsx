@@ -105,65 +105,23 @@ export default function MyPage() {
   const router = useRouter()
   const { user } = useAuth()
 
-<<<<<<< HEAD
-  // 모든 useState를 조건부 return 이전에 호출
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.userId ? user.userId + "@example.com" : "",
-    phone: "010-1234-5678", // 실제 사용자 정보로 업데이트 필요
-    joinDate: "2023-06-15",
-  })
-
-  // 로그인 상태 확인 - loading이 완료되고 user가 없을 때만 리다이렉트
-=======
   // 로그인 상태 확인 - user가 없을 때 리다이렉트
->>>>>>> 0b8dbf164d05d0cff9870f873b92cd90c531adb2
   useEffect(() => {
     if (user === null) {
       router.push("/login")
     }
   }, [user, router])
 
-<<<<<<< HEAD
-  // user 정보가 변경될 때 formData 업데이트
+  // user 정보가 있을 때 formData 업데이트 (adminId 기준)
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
-        email: user.userId + "@example.com",
         phone: "010-1234-5678",
         joinDate: "2023-06-15",
       })
     }
   }, [user])
-
-  // 로딩 중일 때는 로딩 화면 표시
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">로딩 중...</div>
-      </div>
-    )
-  }
-=======
-  // user 정보가 있을 때 formData 업데이트
-  useEffect(() => {
-    if (user) {
-      const userInfo = {
-        name: user.name,
-        email: user.adminId + "@example.com", // adminId 사용
-        phone: "010-1234-5678", // 실제 사용자 정보로 업데이트 필요
-        joinDate: "2023-06-15",
-      }
-      setFormData({
-        name: userInfo.name,
-        email: userInfo.email,
-        phone: userInfo.phone,
-        joinDate: userInfo.joinDate,
-      })
-    }
-  }, [user])
->>>>>>> 0b8dbf164d05d0cff9870f873b92cd90c531adb2
 
   // 사용자가 없을 때는 아무것도 표시하지 않음 (리다이렉트 중)
   if (!user) {
@@ -181,11 +139,7 @@ export default function MyPage() {
     joinDate: "2023-06-15",
     totalOrders: 15,
     totalSpent: 2340000,
-<<<<<<< HEAD
   }
-=======
-  };
->>>>>>> 0b8dbf164d05d0cff9870f873b92cd90c531adb2
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
