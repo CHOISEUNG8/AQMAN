@@ -164,6 +164,7 @@ SIMPLE_JWT = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
     "https://zenithworld.shop",
     "https://www.zenithworld.shop",
     "https://admin.zenithworld.shop",

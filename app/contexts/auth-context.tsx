@@ -38,51 +38,13 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null)
-
-  // 새로고침 시 쿠키의 토큰이 있으면 자동 로그인
-  useEffect(() => {
-    const getTokenFromCookie = () => {
-      const match = document.cookie.match(/auth-token=([^;]+)/);
-      return match ? match[1] : null;
-    };
-    const token = getTokenFromCookie();
-    if (token && !user) {
-      fetchUserInfo(token)
-        .then(setUser)
-        .catch(() => setUser(null));
-    }
-  }, []);
-
-  const login = async (adminId: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const res = await fetch(`${apiUrl}/api/login/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: adminId, password }),
-        credentials: 'include', // 쿠키 사용 시
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('Login failed, response:', text);
-        throw new Error('Login failed');
-      }
-      const data = await res.json();
-      console.log(data); // 여기에 access_token이 있는지 확인
-      document.cookie = `auth-token=${data.access_token}; path=/;`;
-      const userInfo = await fetchUserInfo(data.access_token)
-      setUser(userInfo)
-      return { success: true }
-    } catch (err) {
-      console.error('Login error:', err);
-      return { success: false, error: "네트워크 오류 또는 서버 오류" }
-    }
-  }
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const fetchUserInfo = async (token: string): Promise<User> => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-    const response = await fetch(`${apiUrl}/api/admin/me/`, {
+    const response = await fetch(`${apiUrl}/api/profile/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -108,8 +70,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }
 
+  useEffect(() => {
+    setIsClient(true);
+    const getTokenFromCookie = () => {
+      if (typeof window === "undefined") return null;
+      const match = document.cookie.match(/auth-token=([^;]+)/);
+      return match ? match[1] : null;
+    };
+    const token = getTokenFromCookie();
+    if (token && !user) {
+      fetchUserInfo(token)
+        .then(setUser)
+        .catch(() => setUser(null));
+    }
+  }, []);
+
+  if (!isClient) return null; // SSR에서는 아무것도 렌더링하지 않음
+
+  const login = async (adminId: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const res = await fetch(`${apiUrl}/api/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: adminId, password }),
+        credentials: 'include', // 쿠키 사용 시
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('Login failed, response:', text);
+        throw new Error('Login failed');
+      }
+      const data = await res.json();
+      console.log(data); // 여기에 access_token이 있는지 확인
+      document.cookie = `auth-token=${data.access_token}; path=/;`;
+      setToken(data.access_token); // 토큰 상태 업데이트
+      const userInfo = await fetchUserInfo(data.access_token)
+      setUser(userInfo)
+      return { success: true }
+    } catch (err) {
+      console.error('Login error:', err);
+      return { success: false, error: "네트워크 오류 또는 서버 오류" }
+    }
+  }
+
   const logout = () => {
     setUser(null)
+    setToken(null); // 토큰 상태 업데이트
     document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"
   }
 
