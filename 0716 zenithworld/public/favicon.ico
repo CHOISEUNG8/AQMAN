@@ -1,0 +1,15 @@
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from datetime import timedelta
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    # 로그인 처리
+    SIMPLE_JWT = {
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # 예시: 60분
+        # ...
+    }
+
+
+
