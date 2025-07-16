@@ -16,6 +16,10 @@ from .serializers import (
     DashboardStatsSerializer
 )
 from .permissions import IsAdminUser, IsSuperUser
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.hashers import make_password
 
 # 로거 설정
 logger = logging.getLogger(__name__)
@@ -270,3 +274,24 @@ class AdminProductListView(generics.GenericAPIView):
         except ImportError:
             # products 앱이 없는 경우 임시 데이터
             return Response({'products': []})
+
+class AdminRegisterView(APIView):
+    def post(self, request):
+        data = request.data
+        username = data.get('username')
+        name = data.get('name')
+        password = data.get('password')
+        role = data.get('role')
+        if not (username and name and password and role):
+            return Response({'error': '모든 항목을 입력해주세요.'}, status=400)
+        if User.objects.filter(username=username).exists():
+            return Response({'error': '이미 존재하는 아이디입니다.'}, status=400)
+        user = User.objects.create(
+            username=username,
+            name=name,
+            password=make_password(password),
+            role=role,
+            is_staff=True,  # 관리자 권한
+            is_superuser=(role == "Admin")  # 최고관리자만 superuser
+        )
+        return Response({'success': True})

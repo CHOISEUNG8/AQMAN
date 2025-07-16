@@ -437,6 +437,13 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
     setActiveSubmenu(submenu)
   }
 
+  // 대시보드로 이동 버튼 핸들러
+  const handleDashboardClick = () => {
+    setActiveMenu("dashboard")
+    setActiveSubmenu(null)
+    setExpandedMenu("dashboard")
+  }
+
   return (
     <>
       {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={onClose} />}
@@ -449,11 +456,15 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
       `}
         style={{ backgroundColor: theme.surface, borderRight: `1px solid ${theme.border}` }}
       >
+        {/* 헤더에 로고 및 텍스트 복구, 버튼화 */}
         <div className="flex items-center justify-between p-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
-          <div className="flex items-center space-x-2">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden"
-            >
+          <button
+            className="flex items-center space-x-2 focus:outline-none"
+            onClick={handleDashboardClick}
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+            type="button"
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-MQ5pMJM88ytq3eQJvj93CCYF4gabLD.png"
                 alt="제니스 로고"
@@ -463,12 +474,12 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
             <span className="font-bold text-lg" style={{ color: theme.text }}>
               제니스 쇼핑몰 관리
             </span>
-          </div>
+          </button>
           <Button variant="ghost" size="sm" onClick={onClose} className="lg:hidden">
             <X className="w-4 h-4" />
           </Button>
         </div>
-
+        {/* 이하 메뉴 렌더링은 그대로 */}
         <div className="p-2 space-y-1 overflow-y-auto h-full pb-20">
           {filteredMenuItems.map((menu) => {
             const Icon = menu.icon
@@ -498,7 +509,6 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </button>
-
                 {/* Submenu */}
                 {isExpanded && (
                   <div className="ml-8 mt-1 space-y-1">
@@ -525,11 +535,17 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
   )
 }
 
-function TopBar({ onMenuClick, userRole, adminUser }: { onMenuClick: () => void; userRole: string; adminUser?: any }) {
+function TopBar({ onMenuClick, userRole, setUserRole, adminUser, setActiveMenu, setActiveSubmenu }: { onMenuClick: () => void; userRole: string; setUserRole: (role: string) => void; adminUser?: any; setActiveMenu: (menu: string) => void; setActiveSubmenu: (submenu: string | null) => void }) {
   const handleLogout = () => {
     localStorage.removeItem('admin_user')
     localStorage.removeItem('admin_role')
     window.location.href = '/admin/login'
+  }
+
+  // 대시보드로 이동 버튼 핸들러
+  const handleDashboardClick = () => {
+    setActiveMenu("dashboard")
+    setActiveSubmenu(null)
   }
 
   return (
@@ -545,52 +561,27 @@ function TopBar({ onMenuClick, userRole, adminUser }: { onMenuClick: () => void;
         >
           <Menu className="w-5 h-5" />
         </button>
-
-        <div className="flex items-center space-x-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden"
-          >
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-MQ5pMJM88ytq3eQJvj93CCYF4gabLD.png"
-              alt="제니스 로고"
-              className="w-8 h-8 object-contain"
-            />
-          </div>
-          <span className="font-bold text-lg" style={{ color: theme.text }}>
-            제니스 쇼핑몰 관리
+        {/* 관리자 정보 + 로그아웃 버튼을 한 줄에 배치 */}
+        <div className="flex items-center space-x-2">
+          <span className="ml-4 px-3 py-1 rounded-lg text-sm font-medium" style={{ backgroundColor: theme.accent + '40', color: theme.text }}>
+            {(() => {
+              const account = adminAccounts.find(acc => acc.role === userRole);
+              if (account && permissionGroups[userRole as keyof typeof permissionGroups]?.name) {
+                return `${account.name}(${account.username}) ${permissionGroups[userRole as keyof typeof permissionGroups]?.name}`;
+              }
+              return '';
+            })()}
           </span>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>로그아웃</span>
+          </Button>
         </div>
-      </div>
-
-      <div className="flex items-center space-x-4">
-        {/* 로그인된 사용자 정보 */}
-        {adminUser && (
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <p className="text-sm font-medium" style={{ color: theme.text }}>
-                {adminUser.name} ({adminUser.username})
-              </p>
-              <p className="text-xs" style={{ color: theme.textMuted }}>
-                {permissionGroups[adminUser.role as keyof typeof permissionGroups]?.name}
-              </p>
-            </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" 
-                 style={{ backgroundColor: theme.primary }}>
-              <User className="w-4 h-4 text-white" />
-            </div>
-          </div>
-        )}
-
-        {/* 로그아웃 버튼 */}
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          size="sm"
-          className="flex items-center space-x-2"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>로그아웃</span>
-        </Button>
       </div>
     </div>
   )
@@ -945,7 +936,10 @@ function Dashboard({ userRole }: { userRole: string }) {
   )
 }
 
-function AdminAccountsPage() {
+// AdminAccountsPage에 userRole props 추가
+type AdminAccountsPageProps = { userRole: string }
+
+function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
   const [accounts, setAccounts] = useState([...adminAccounts])
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -966,7 +960,11 @@ function AdminAccountsPage() {
       account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       account.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === "all" || account.role === roleFilter
-    return matchesSearch && matchesRole
+    // 내 권한보다 상위(레벨이 낮은) 관리자는 숨김 (단, 최고관리자는 모두 볼 수 있음)
+    const myLevel = permissionGroups[userRole as keyof typeof permissionGroups]?.level || 99;
+    const targetLevel = permissionGroups[account.role as keyof typeof permissionGroups]?.level || 99;
+    const canSee = myLevel === 1 || targetLevel >= myLevel;
+    return matchesSearch && matchesRole && canSee;
   })
 
   // 계정 수정 핸들러
@@ -982,6 +980,7 @@ function AdminAccountsPage() {
     setConfirmPassword("")
     setPasswordError("")
     setIsPasswordDialogOpen(true)
+    // setSearchTerm("") 제거: 검색창 값이 변경되지 않도록 함
   }
 
   // 계정 삭제 핸들러
@@ -1002,8 +1001,8 @@ function AdminAccountsPage() {
   // 비밀번호 저장
   const savePasswordChange = () => {
     if (newPassword !== confirmPassword) {
-      setPasswordError("비밀번호가 일치하지 않습니다.")
-      return
+      setPasswordError("비밀번호를 다시 확인해주세요.");
+      return;
     }
 
     if (newPassword.length < 4 || newPassword.length > 20) {
@@ -1049,10 +1048,12 @@ function AdminAccountsPage() {
                   style={{ color: theme.textMuted }}
                 />
                 <Input
+                  name="randomSearch"
                   placeholder="아이디, 계정명, 이름 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-64"
+                  autoComplete="off"
                 />
               </div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
@@ -1069,7 +1070,10 @@ function AdminAccountsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button style={{ backgroundColor: theme.primary, color: "white" }}>
+              <Button
+                style={{ backgroundColor: theme.primary, color: "white" }}
+                onClick={() => window.location.href = "/admin/register"}
+              >
                 <UserPlus className="w-4 h-4 mr-2" />새 관리자
               </Button>
             </div>
@@ -1594,6 +1598,7 @@ export default function EcommerceAdmin() {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
   const [userRole, setUserRole] = useState("Admin")
   const [adminUser, setAdminUser] = useState<any>(null)
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // 로그인된 관리자 정보 확인
   useEffect(() => {
@@ -1604,11 +1609,16 @@ export default function EcommerceAdmin() {
       const user = JSON.parse(storedUser)
       setAdminUser(user)
       setUserRole(storedRole || user.role)
+      setCheckingAuth(false);
     } else {
       // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
       window.location.href = '/admin/login'
     }
   }, [])
+
+  if (checkingAuth) {
+    return null; // 또는 <div>로딩 중...</div>
+  }
 
   // 현재 활성화된 메뉴와 서브메뉴에 따라 컨텐츠 렌더링
   const renderContent = () => {
@@ -1617,7 +1627,7 @@ export default function EcommerceAdmin() {
     }
 
     if (activeMenu === "admin" && activeSubmenu === "관리자 계정") {
-      return <AdminAccountsPage />
+      return <AdminAccountsPage userRole={userRole} />
     }
 
     if (activeMenu === "settlement" && activeSubmenu === "정산 내역") {
@@ -1660,7 +1670,7 @@ export default function EcommerceAdmin() {
         />
 
         <div className="flex-1 lg:ml-0">
-          <TopBar onMenuClick={() => setSidebarOpen(true)} userRole={userRole} adminUser={adminUser} />
+          <TopBar onMenuClick={() => setSidebarOpen(true)} userRole={userRole} setUserRole={setUserRole} adminUser={adminUser} setActiveMenu={setActiveMenu} setActiveSubmenu={setActiveSubmenu} />
 
           <main className="p-6">
             <div className="mb-6">
