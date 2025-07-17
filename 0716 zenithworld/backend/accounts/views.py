@@ -201,6 +201,35 @@ class AdminUserUpdateView(generics.UpdateAPIView):
     serializer_class = AdminUserUpdateSerializer
     queryset = User.objects.all()
 
+class AdminUserPasswordChangeView(generics.UpdateAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    
+    def put(self, request, *args, **kwargs):
+        user = self.get_object()
+        new_password = request.data.get('password')
+        
+        if not new_password:
+            return Response(
+                {'error': '새 비밀번호를 입력해주세요.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if len(new_password) < 4 or len(new_password) > 20:
+            return Response(
+                {'error': '비밀번호는 4 이상 20자 이하로 입력해주세요.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 비밀번호 변경
+        user.password = make_password(new_password)
+        user.save()
+        
+        return Response({
+           'message': '비밀번호가 성공적으로 변경되었습니다.',
+          'success': True
+        })
+
 class AdminUserDeleteView(generics.DestroyAPIView):
     permission_classes = [IsSuperUser]
     queryset = User.objects.all()
@@ -295,18 +324,3 @@ class AdminRegisterView(APIView):
             is_superuser=(role == "Admin")  # 최고관리자만 superuser
         )
         return Response({'success': True})
-
-@api_view(['PUT'])
-@permission_classes([IsAdminUser])
-def admin_user_password_change(request, pk):
-    from .models import User
-    try:
-        user = User.objects.get(pk=pk)
-        password = request.data.get('password')
-        if not password or len(password) < 4 or len(password) > 20:
-            return Response({'error': '비밀번호는 4자 이상 20자 이하로 입력하세요.'}, status=400)
-        user.password = make_password(password)
-        user.save()
-        return Response({'success': True})
-    except User.DoesNotExist:
-        return Response({'error': '해당 사용자를 찾을 수 없습니다.'}, status=404)

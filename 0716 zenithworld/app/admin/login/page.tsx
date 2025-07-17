@@ -164,6 +164,9 @@ export default function AdminLogin() {
       localStorage.setItem('admin_user', JSON.stringify(adminUser))
       localStorage.setItem('admin_role', validatedAccount.role)
       
+      // 쿠키에도 저장 (SSR 인증용)
+      document.cookie = `auth-token=${validatedAccount.id}; path=/;`
+      
       // 로그인 시간 업데이트 (실제 환경에서는 서버에서 처리)
       const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
       

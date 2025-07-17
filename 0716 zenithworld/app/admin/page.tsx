@@ -1015,6 +1015,11 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
 
     try {
       const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setPasswordError("인증 토큰이 없습니다. 다시 로그인해주세요.");
+        return;
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${editAccount.id}/password/`,
         {
@@ -1026,15 +1031,22 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
           body: JSON.stringify({ password: newPassword }),
         }
       );
-      const data = await res.json();
+
       if (!res.ok) {
-        setPasswordError(data.error || "비밀번호 변경에 실패했습니다.");
+        const errorData = await res.json();
+        setPasswordError(errorData.error || "비밀번호 변경에 실패했습니다.");
         return;
       }
+
+      const data = await res.json();
       setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordError("");
       showSuccessMessage("비밀번호가 성공적으로 변경되었습니다.");
     } catch (err) {
-      setPasswordError("서버 오류가 발생했습니다.");
+      console.error("비밀번호 변경 오류:", err);
+      setPasswordError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
