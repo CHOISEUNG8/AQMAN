@@ -192,7 +192,7 @@ export default function Footer() {
                 </span>
               </div>
               <p className="text-xs text-gray-400">
-                 Copyright © ZENITH WORLD. All rights reserved. Designed & Developed by AQMAN
+                Copyright © 제니스월드 온라인 쇼핑몰. All Rights Reserved. Made by AQMAN
               </p>
             </div>
           </div>

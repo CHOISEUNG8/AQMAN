@@ -6,7 +6,7 @@ from .views import (
     # 관리자용 API
     AdminDashboardView, AdminUserListView, AdminUserDetailView,
     AdminUserCreateView, AdminUserUpdateView, AdminUserDeleteView,
-    AdminUserPasswordChangeView, AdminStatsView, AdminOrderListView, AdminProductListView
+    AdminStatsView, AdminOrderListView, AdminProductListView
 )
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -31,7 +31,6 @@ urlpatterns = [
     path('admin/users/create/', AdminUserCreateView.as_view(), name='admin-user-create'),
     path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:pk>/update/', AdminUserUpdateView.as_view(), name='admin-user-update'),
-    path('admin/users/<int:pk>/password/', AdminUserPasswordChangeView.as_view(), name='admin-user-password'),
     path('admin/users/<int:pk>/delete/', AdminUserDeleteView.as_view(), name='admin-user-delete'),
     path('admin/orders/', AdminOrderListView.as_view(), name='admin-orders'),
     path('admin/products/', AdminProductListView.as_view(), name='admin-products'),

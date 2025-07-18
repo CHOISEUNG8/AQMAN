@@ -85,8 +85,6 @@ export default function AdminLogin() {
       // 토큰과 사용자 정보 저장
       localStorage.setItem('admin_token', data.access_token);
       localStorage.setItem('admin_user', JSON.stringify(data.user));
-      // 쿠키에도 저장 (SSR 인증용)
-      document.cookie = `auth-token=${data.access_token}; path=/;`;
       
       // 대시보드로 리다이렉트
       router.push('/admin');
@@ -124,14 +122,6 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          {/* 제니스 로고 */}
-          <div className="flex justify-center mb-4">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-MQ5pMJM88ytq3eQJvj93CCYF4gabLD.png"
-              alt="ZenithWorld Logo"
-              className="h-16 w-16 object-contain rounded-full shadow"
-            />
-          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             ZenithWorld 관리자
           </h2>

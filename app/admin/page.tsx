@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -942,7 +942,6 @@ type AdminAccountsPageProps = { userRole: string }
 function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
   const [accounts, setAccounts] = useState([...adminAccounts])
   const [searchTerm, setSearchTerm] = useState("")
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const [roleFilter, setRoleFilter] = useState("all")
   const [editAccount, setEditAccount] = useState<any>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -981,10 +980,7 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
     setConfirmPassword("")
     setPasswordError("")
     setIsPasswordDialogOpen(true)
-    setSearchTerm("") // 검색창 항상 비우기
-    if (searchInputRef.current) {
-      searchInputRef.current.value = "" // 브라우저 자동입력까지 강제 초기화
-    }
+    // setSearchTerm("") 제거: 검색창 값이 변경되지 않도록 함
   }
 
   // 계정 삭제 핸들러
@@ -1003,52 +999,21 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
   }
 
   // 비밀번호 저장
-  const savePasswordChange = async () => {
-    if (newPassword.length < 4 || newPassword.length > 20) {
-      setPasswordError("비밀번호는 4자 이상 20자 이하로 입력하세요.");
-      return;
-    }
+  const savePasswordChange = () => {
     if (newPassword !== confirmPassword) {
       setPasswordError("비밀번호를 다시 확인해주세요.");
       return;
     }
 
-    try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        setPasswordError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        return;
-      }
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${editAccount.id}/password/`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ password: newPassword }),
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        setPasswordError(errorData.error || "비밀번호 변경에 실패했습니다.");
-        return;
-      }
-
-      const data = await res.json();
-      setIsPasswordDialogOpen(false);
-      setNewPassword("");
-      setConfirmPassword("");
-      setPasswordError("");
-      showSuccessMessage("비밀번호가 성공적으로 변경되었습니다.");
-    } catch (err) {
-      console.error("비밀번호 변경 오류:", err);
-      setPasswordError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    if (newPassword.length < 4 || newPassword.length > 20) {
+      setPasswordError("비밀번호는 4자 이상 20자 이하로 입력하세요.")
+      return
     }
-  };
+
+    // 실제로는 API 호출로 비밀번호 변경 처리
+    setIsPasswordDialogOpen(false)
+    showSuccessMessage("비밀번호가 성공적으로 변경되었습니다.")
+  }
 
   // 계정 삭제 확인
   const confirmDeleteAccount = () => {
@@ -1083,13 +1048,12 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
                   style={{ color: theme.textMuted }}
                 />
                 <Input
-                  name="randomSearchX"
+                  name="randomSearch"
                   placeholder="아이디, 계정명, 이름 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-64"
-                  autoComplete="new-password"
-                  ref={searchInputRef}
+                  autoComplete="off"
                 />
               </div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
@@ -1343,7 +1307,7 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="4자 이상 입력하세요"
+                placeholder="8자 이상 입력하세요"
               />
             </div>
             <div className="space-y-2">

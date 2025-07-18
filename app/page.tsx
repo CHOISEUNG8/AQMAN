@@ -8,7 +8,7 @@ import FeaturedProducts from "@/components/sections/featured-products"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Award, ChevronRight, Crown, Zap, Gift, Instagram, Truck, Shield, Headphones, Building2, ChevronsRight } from "lucide-react"
+import { Users, Award, ChevronRight, Crown, Zap, Gift, Instagram, Truck, Shield, Headphones, Building2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 const trendingBrands = [
@@ -70,9 +70,9 @@ const trendingBrands = [
 
 const serviceFeatures = [
   {
-    icon: ChevronsRight, // 외부 링크/바로가기 느낌의 아이콘으로 변경
-    title: "폐쇄몰 사이트 바로가기",
-    description: "제휴사 전용 폐쇄몰을 바로 방문하세요.",
+    icon: Truck,
+    title: "무료 배송",
+    description: "5만원 이상 구매시 전국 무료배송",
     color: "text-blue-500",
   },
   {
@@ -107,11 +107,6 @@ export default function HomePage() {
   const handleLinkClick = (href: string) => {
     scrollToTop()
     router.push(href)
-  }
-
-  const goToPrivateMall = () => {
-    // TODO: 실제 폐쇄몰 URL로 변경
-    window.open("https://private-mall.example.com", "_blank")
   }
 
   // 페이지 로드 시 스크롤 맨 위로
@@ -240,43 +235,29 @@ export default function HomePage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {serviceFeatures.map((feature, index) =>
-              feature.title === "폐쇄몰 사이트 바로가기" ? (
-                <Card
-                  key={index}
-                  className="text-center hover:shadow-lg transition-shadow duration-300 cursor-pointer hover:scale-105 transform transition-transform"
-                  onClick={goToPrivateMall}
-                >
-                  <CardContent className="p-6 flex flex-col items-center">
-                    <feature.icon className={`w-12 h-12 mb-4 ${feature.color}`} />
-                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card
-                  key={index}
-                  className={`text-center hover:shadow-lg transition-shadow duration-300 ${
-                    feature.title === "회원 혜택" || feature.title === "입점 문의"
-                      ? "cursor-pointer hover:scale-105 transform transition-transform"
-                      : ""
-                  }`}
-                  onClick={
-                    feature.title === "회원 혜택"
-                      ? () => setShowBenefitsModal(true)
-                      : feature.title === "입점 문의"
-                        ? () => handleLinkClick("/b2b-signup")
-                        : undefined
-                  }
-                >
-                  <CardContent className="p-6">
-                    <feature.icon className={`w-12 h-12 mx-auto mb-4 ${feature.color}`} />
-                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-gray-600 text-sm">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              )
-            )}
+            {serviceFeatures.map((feature, index) => (
+              <Card
+                key={index}
+                className={`text-center hover:shadow-lg transition-shadow duration-300 ${
+                  feature.title === "회원 혜택" || feature.title === "입점 문의"
+                    ? "cursor-pointer hover:scale-105 transform transition-transform"
+                    : ""
+                }`}
+                onClick={
+                  feature.title === "회원 혜택"
+                    ? () => setShowBenefitsModal(true)
+                    : feature.title === "입점 문의"
+                      ? () => handleLinkClick("/b2b-signup")
+                      : undefined
+                }
+              >
+                <CardContent className="p-6">
+                  <feature.icon className={`w-12 h-12 mx-auto mb-4 ${feature.color}`} />
+                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

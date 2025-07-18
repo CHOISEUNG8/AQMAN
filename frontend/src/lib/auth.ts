@@ -30,15 +30,11 @@ export const getAdminToken = (): string | null => {
 export const setAdminToken = (token: string): void => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ADMIN_TOKEN_KEY, token);
-  // 쿠키에도 저장 (SSR 인증용)
-  document.cookie = `auth-token=${token}; path=/;`;
 };
 
 export const removeAdminToken = (): void => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(ADMIN_TOKEN_KEY);
-  // 쿠키에서도 삭제
-  document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
 };
 
 // 사용자 정보 관리
@@ -107,8 +103,6 @@ export const adminLogin = async (username: string, password: string): Promise<{ 
       // 토큰과 사용자 정보 저장
       setAdminToken(data.access_token);
       setAdminUser(data.user);
-      // 쿠키에도 저장 (SSR 인증용)
-      document.cookie = `auth-token=${data.access_token}; path=/;`;
 
       return { success: true };
     } else {
@@ -123,8 +117,6 @@ export const adminLogin = async (username: string, password: string): Promise<{ 
 export const adminLogout = (): void => {
   removeAdminToken();
   removeAdminUser();
-  // 쿠키에서도 삭제
-  document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
 };
 
 // 토큰 갱신 함수

@@ -164,9 +164,6 @@ export default function AdminLogin() {
       localStorage.setItem('admin_user', JSON.stringify(adminUser))
       localStorage.setItem('admin_role', validatedAccount.role)
       
-      // 쿠키에도 저장 (SSR 인증용)
-      document.cookie = `auth-token=${validatedAccount.id}; path=/;`
-      
       // 로그인 시간 업데이트 (실제 환경에서는 서버에서 처리)
       const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
       
@@ -197,13 +194,9 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         {/* 로고 및 헤더 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-MQ5pMJM88ytq3eQJvj93CCYF4gabLD.png"
-              alt="ZenithWorld Logo"
-              className="w-12 h-12 object-contain rounded-full"
-              style={{ backgroundColor: 'transparent' }}
-            />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" 
+               style={{ backgroundColor: theme.primary, boxShadow: `0 8px 32px ${theme.primary}40` }}>
+            <Package className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: theme.text }}>
             관리자 로그인
@@ -398,7 +391,7 @@ export default function AdminLogin() {
         {/* 하단 정보 */}
         <div className="text-center mt-6">
           <p className="text-xs" style={{ color: theme.textMuted }}>
-          Copyright © ZENITH WORLD. All rights reserved. Designed & Developed by AQMAN
+            © 2024 쇼핑몰 관리 시스템. 모든 권리 보유.
           </p>
         </div>
       </div>
