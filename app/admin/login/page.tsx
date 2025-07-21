@@ -298,7 +298,7 @@ export default function AdminLogin() {
         {/* 하단 정보 */}
         <div className="text-center mt-6">
           <p className="text-xs" style={{ color: theme.textMuted }}>
-            Copyright © 제니스월드 온라인 쇼핑몰. All Rights Reserved. Made by AQMAN
+            Copyright © 제니스월드 관리자 페이지입니다. All Rights Reserved. Made by AQMAN
           </p>
         </div>
       </div>

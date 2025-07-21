@@ -1,103 +1,149 @@
-import React from 'react';
-import { ArrowLeft, ShoppingCart as CartIcon } from 'lucide-react';
-import { useCart } from '../hooks/useCart';
-import { CartItem } from './CartItem';
-import { EmptyCart } from './EmptyCart';
-import { OrderSummary } from './OrderSummary';
+"use client";
+
+import React, { useState } from "react";
+import {
+  ShoppingCart as ShoppingCartIcon,
+  X,
+  Minus,
+  Plus,
+  TicketPercent,
+} from "lucide-react";
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+const initialCartItems: CartItem[] = [
+  { id: 1, name: "무선 청소기", price: 120000, quantity: 1 },
+  { id: 2, name: "스탠드 선풍기", price: 29000, quantity: 2 },
+];
+
+const validCoupons: Record<string, any> = {
+  DISCOUNT10: { type: "percent", value: 10 },
+  FREEDELIVERY: { type: "free_shipping" },
+};
 
 export const ShoppingCart: React.FC = () => {
-  const { cartState, updateQuantity, removeItem } = useCart();
+  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const [couponCode, setCouponCode] = useState<string>("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = cartItems.length > 0 && subtotal < 50000 ? 3000 : 0;
+
+  const discount =
+    appliedCoupon?.type === "percent"
+      ? Math.floor((subtotal * appliedCoupon.value) / 100)
+      : 0;
+
+  const deliveryFee = appliedCoupon?.type === "free_shipping" ? 0 : shipping;
+  const total = subtotal - discount + deliveryFee;
+
+  const applyCoupon = () => {
+    const code = couponCode.trim().toUpperCase();
+    const coupon = validCoupons[code];
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      alert("쿠폰이 적용되었습니다!");
+    } else {
+      alert("유효하지 않은 쿠폰입니다.");
+    }
+  };
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, quantity: Math.max(item.quantity + delta, 1) }
+          : item
+      )
+    );
+  };
+
+  const removeItem = (id: number) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <ArrowLeft size={20} />
-              </button>
-              <h1 className="text-xl font-bold">장바구니</h1>
-              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                {cartState.items.length}
-              </span>
-            </div>
-            <CartIcon size={24} className="text-gray-600" />
-          </div>
-        </div>
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl mt-8">
+      <div className="flex items-center mb-6">
+        <ShoppingCartIcon className="w-6 h-6 mr-2" />
+        <h2 className="text-xl font-bold">장바구니</h2>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-blue-900 mb-2">주문예정시기 안내 참고하세요!</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• 현재 금액이 50,000원 미달일 경우, 배송비 3,500원이 부과됩니다.</li>
-            <li>• 단, 제주도 및 도서산간지역은 3,000원 이상의 추가 배송비가 발생됩니다.</li>
-            <li>• 당일발송 : 오늘 24시까지 주문 및 결제완료 (평일/화장실 1~3일 소요)</li>
-            <li>• 공휴일 제외한 3일 이내에 발송하며, 만일 재고 같은 지연 시 유스 습니다.</li>
-            <li>• 장마구에 얽은 제품은 최대 3일간 저장됩니다.</li>
-          </ul>
-        </div>
-
-        {cartState.items.length === 0 ? (
-          <EmptyCart />
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm">
-                <div className="p-6">
-                  <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-500 mb-4 hidden md:grid">
-                    <div className="col-span-2">상품명</div>
-                    <div className="text-center">할인가</div>
-                    <div className="text-center">옵션 / 수량</div>
-                    <div className="text-center">합계금액</div>
-                  </div>
-                  
-                  <div className="space-y-0">
-                    {cartState.items.map((item) => (
-                      <CartItem
-                        key={item.id}
-                        item={item}
-                        onQuantityChange={updateQuantity}
-                        onRemove={removeItem}
-                      />
-                    ))}
-                  </div>
+      {cartItems.length === 0 ? (
+        <p className="text-center text-gray-500 py-8">장바구니가 비어 있습니다.</p>
+      ) : (
+        <>
+          <ul className="divide-y mb-4">
+            {cartItems.map((item) => (
+              <li key={item.id} className="flex justify-between py-4 items-center">
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-sm text-gray-500">
+                    ₩{item.price.toLocaleString()} x {item.quantity}
+                  </p>
                 </div>
-              </div>
-            </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => updateQuantity(item.id, -1)}>
+                    <Minus className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, 1)}>
+                    <Plus className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button onClick={() => removeItem(item.id)}>
+                    <X className="w-4 h-4 text-red-500 ml-2" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-            {/* Order Summary & Action Buttons */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <OrderSummary cartState={cartState} />
+          {/* 쿠폰 입력 */}
+          <div className="flex items-center mb-4">
+            <TicketPercent className="w-5 h-5 text-purple-600 mr-2" />
+            <input
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              placeholder="쿠폰 코드 입력 (예: DISCOUNT10)"
+              className="border px-3 py-2 rounded-md w-full mr-2"
+            />
+            <button
+              onClick={applyCoupon}
+              className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+            >
+              적용
+            </button>
+          </div>
+
+          {/* 요약 */}
+          <div className="border-t pt-4 space-y-2 text-sm text-gray-700">
+            <div className="flex justify-between">
+              <span>상품 금액</span>
+              <span>₩{subtotal.toLocaleString()}</span>
+            </div>
+            {appliedCoupon?.type === "percent" && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>할인 적용</span>
+                <span>- ₩{discount.toLocaleString()}</span>
               </div>
-              
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <button className="w-full bg-gray-800 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-900 transition-colors text-lg">
-                  계속 쇼핑하기
-                </button>
-                <button className="w-full bg-red-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors text-lg">
-                  주문하기
-                </button>
-              </div>
+            )}
+            <div className="flex justify-between">
+              <span>배송비</span>
+              <span>{deliveryFee > 0 ? `₩${deliveryFee.toLocaleString()}` : "무료"}</span>
+            </div>
+            <div className="flex justify-between font-bold text-base mt-2">
+              <span>총 결제금액</span>
+              <span>₩{total.toLocaleString()}</span>
             </div>
           </div>
-        )}
-
-        {/* Bottom Stats */}
-        {cartState.items.length > 0 && (
-          <div className="bg-gray-600 text-white p-4 rounded-lg mt-8 text-center">
-            <span className="text-sm">
-              상품 가격 {cartState.items.reduce((sum, item) => sum + item.quantity, 0)}개 • 배송비 {cartState.shipping === 0 ? '무료' : '3,000원'} • 총 결제금액 {cartState.items.reduce((sum, item) => sum + item.quantity, 0)}개
-            </span>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };
