@@ -56,8 +56,11 @@ import {
   AlertCircle,
   DollarSign,
   LogOut,
+  ArrowRight,
 } from "lucide-react"
 import { useEffect, useMemo } from "react"
+import { useAuth } from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
 
 const theme = {
   primary: "#ff8c00",
@@ -536,10 +539,11 @@ function Sidebar({ isOpen, onClose, activeMenu, setActiveMenu, userRole, setActi
 }
 
 function TopBar({ onMenuClick, userRole, setUserRole, adminUser, setActiveMenu, setActiveSubmenu }: { onMenuClick: () => void; userRole: string; setUserRole: (role: string) => void; adminUser?: any; setActiveMenu: (menu: string) => void; setActiveSubmenu: (submenu: string | null) => void }) {
+  const { logout } = useAuth();
+  
   const handleLogout = () => {
-    localStorage.removeItem('admin_user')
-    localStorage.removeItem('admin_role')
-    window.location.href = '/admin/login'
+    logout();
+    window.location.href = '/admin/login';
   }
 
   // 대시보드로 이동 버튼 핸들러
@@ -564,13 +568,7 @@ function TopBar({ onMenuClick, userRole, setUserRole, adminUser, setActiveMenu, 
         {/* 관리자 정보 + 로그아웃 버튼을 한 줄에 배치 */}
         <div className="flex items-center space-x-2">
           <span className="ml-4 px-3 py-1 rounded-lg text-sm font-medium" style={{ backgroundColor: theme.accent + '40', color: theme.text }}>
-            {(() => {
-              const account = adminAccounts.find(acc => acc.role === userRole);
-              if (account && permissionGroups[userRole as keyof typeof permissionGroups]?.name) {
-                return `${account.name}(${account.username}) ${permissionGroups[userRole as keyof typeof permissionGroups]?.name}`;
-              }
-              return '';
-            })()}
+            {adminUser ? `${adminUser.name}(${adminUser.username}) ${permissionGroups[userRole as keyof typeof permissionGroups]?.name || '관리자'}` : '관리자'}
           </span>
           <Button
             onClick={handleLogout}
@@ -1307,7 +1305,7 @@ function AdminAccountsPage({ userRole }: AdminAccountsPageProps) {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="8자 이상 입력하세요"
+                placeholder="4자 이상 입력하세요"
               />
             </div>
             <div className="space-y-2">
@@ -1593,32 +1591,25 @@ function SettlementPage() {
 }
 
 export default function EcommerceAdmin() {
+  const { isAuthenticated, user, isLoading } = useAuth();
+  const router = useRouter();
+
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeMenu, setActiveMenu] = useState("dashboard")
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
   const [userRole, setUserRole] = useState("Admin")
-  const [adminUser, setAdminUser] = useState<any>(null)
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [adminUser, setAdminUser] = useState<any>(user)
 
-  // 로그인된 관리자 정보 확인
   useEffect(() => {
-    const storedUser = localStorage.getItem('admin_user')
-    const storedRole = localStorage.getItem('admin_role')
-    
-    if (storedUser) {
-      const user = JSON.parse(storedUser)
-      setAdminUser(user)
-      setUserRole(storedRole || user.role)
-      setCheckingAuth(false);
-    } else {
-      // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
-      window.location.href = '/admin/login'
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/admin/login');
     }
-  }, [])
+  }, [isAuthenticated, isLoading, router]);
 
-  if (checkingAuth) {
-    return null; // 또는 <div>로딩 중...</div>
-  }
+  if (isLoading) return <div>로딩 중...</div>;
+  if (!isAuthenticated) return null;
+
+  console.log('[대시보드] isAuthenticated:', isAuthenticated, 'isLoading:', isLoading, 'user:', user);
 
   // 현재 활성화된 메뉴와 서브메뉴에 따라 컨텐츠 렌더링
   const renderContent = () => {

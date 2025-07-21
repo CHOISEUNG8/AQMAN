@@ -18,7 +18,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 # Application definition
 INSTALLED_APPS = [
-    # 'django.contrib.admin',  # 어드민 비활성화
+    'django.contrib.admin',  # 어드민 활성화
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

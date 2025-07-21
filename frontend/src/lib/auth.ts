@@ -103,6 +103,8 @@ export const adminLogin = async (username: string, password: string): Promise<{ 
       // 토큰과 사용자 정보 저장
       setAdminToken(data.access_token);
       setAdminUser(data.user);
+      // 쿠키에도 저장
+      document.cookie = `auth-token=${data.access_token}; path=/;`;
 
       return { success: true };
     } else {
@@ -117,6 +119,8 @@ export const adminLogin = async (username: string, password: string): Promise<{ 
 export const adminLogout = (): void => {
   removeAdminToken();
   removeAdminUser();
+  // 쿠키도 삭제
+  document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
 };
 
 // 토큰 갱신 함수

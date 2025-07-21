@@ -2,12 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
-import { AuthProvider } from "./contexts/auth-context"
-import AdminLayoutWrapper from "@/components/layout/admin-layout-wrapper"
+import ClientProviders from "./ClientProviders"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -35,14 +30,9 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <AdminLayoutWrapper>
-              {children}
-            </AdminLayoutWrapper>
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   )

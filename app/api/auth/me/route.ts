@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { useAuth } from "@/contexts/auth-context"
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Django 백엔드 API로 사용자 정보 요청
-    const response = await fetch("http://127.0.0.1:8000/api/user/me/", {
+    const response = await fetch("http://127.0.0.1:8000/api/user-info/", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -27,6 +26,10 @@ export async function GET(request: NextRequest) {
         id: userData.id,
         userId: userData.username,
         name: userData.name,
+        email: userData.email,
+        is_staff: userData.is_staff,
+        is_superuser: userData.is_superuser,
+        // 필요시 추가 필드
       })
     } else {
       // 토큰이 유효하지 않으면 쿠키에서 제거

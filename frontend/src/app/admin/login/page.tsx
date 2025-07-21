@@ -85,6 +85,8 @@ export default function AdminLogin() {
       // 토큰과 사용자 정보 저장
       localStorage.setItem('admin_token', data.access_token);
       localStorage.setItem('admin_user', JSON.stringify(data.user));
+      // 쿠키에도 저장
+      document.cookie = `auth-token=${data.access_token}; path=/;`;
       
       // 대시보드로 리다이렉트
       router.push('/admin');

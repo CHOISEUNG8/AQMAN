@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import {
   ArrowRight,
   AlertCircle,
 } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 const theme = {
   primary: "#ff8c00", // 네온 오렌지
@@ -35,80 +36,29 @@ const theme = {
   error: "#ef4444",
 }
 
-// 관리자 계정 데이터 (admin page에서 가져온 데이터)
-const adminAccounts = [
-  {
-    id: "admin001",
-    adminId: "admin@company.com",
-    username: "zwadmin",
-    password: "0045", // 실제 환경에서는 해시된 비밀번호 사용
-    name: "김관리",
-    role: "Admin",
-    lastLogin: "2024-01-15 14:30",
-    status: "활성",
-  },
-  {
-    id: "admin002",
-    adminId: "product.manager@company.com",
-    username: "product_manager",
-    password: "product123",
-    name: "이상품",
-    role: "Product",
-    lastLogin: "2024-01-15 10:15",
-    status: "활성",
-  },
-  {
-    id: "admin003",
-    adminId: "order.manager@company.com",
-    username: "order_manager",
-    password: "order123",
-    name: "박주문",
-    role: "Order",
-    lastLogin: "2024-01-14 16:45",
-    status: "활성",
-  },
-  {
-    id: "admin004",
-    adminId: "member.manager@company.com",
-    username: "member_manager",
-    password: "member123",
-    name: "최회원",
-    role: "Member",
-    lastLogin: "2024-01-13 09:20",
-    status: "활성",
-  },
-  {
-    id: "admin005",
-    adminId: "marketing@company.com",
-    username: "marketing_team",
-    password: "marketing123",
-    name: "정마케팅",
-    role: "Marketing",
-    lastLogin: "2024-01-12 11:30",
-    status: "활성",
-  },
-  {
-    id: "admin006",
-    adminId: "support@company.com",
-    username: "cs_support",
-    password: "support123",
-    name: "한상담",
-    role: "Support",
-    lastLogin: "2024-01-11 13:45",
-    status: "비활성",
-  },
-]
-
 export default function AdminLogin() {
   const router = useRouter()
+  const { login, isAuthenticated, isLoading } = useAuth()
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     rememberMe: false,
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [formLoading, setFormLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace('/admin');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (!isClient) return null;
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -119,65 +69,23 @@ export default function AdminLogin() {
     if (error) setError("")
   }
 
-  // 관리자 계정 검증 함수
-  const validateAdminAccount = (username: string, password: string) => {
-    const account = adminAccounts.find(acc => 
-      (acc.username === username || acc.adminId === username) && 
-      acc.password === password &&
-      acc.status === "활성"
-    )
-    return account
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    // 간단한 유효성 검사
-    if (!formData.username || !formData.password) {
-      setError("아이디와 비밀번호를 모두 입력해주세요.")
-      setIsLoading(false)
-      return
-    }
+    e.preventDefault();
+    setFormLoading(true);
+    setError("");
 
     try {
-      // 관리자 계정 검증
-      const validatedAccount = validateAdminAccount(formData.username, formData.password)
-      
-      if (!validatedAccount) {
-        setError("아이디 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.")
-        setIsLoading(false)
-        return
+      const result = await login(formData.username, formData.password);
+      console.log('로그인 결과:', result);
+      if (!result.success) {
+        setError(result.error || '로그인에 실패했습니다.');
       }
-
-      // 로그인 성공 시 사용자 정보 저장
-      const adminUser = {
-        id: validatedAccount.id,
-        adminId: validatedAccount.adminId,
-        username: validatedAccount.username,
-        name: validatedAccount.name,
-        role: validatedAccount.role,
-      }
-
-      // 로컬 스토리지에 관리자 정보 저장
-      localStorage.setItem('admin_user', JSON.stringify(adminUser))
-      localStorage.setItem('admin_role', validatedAccount.role)
-      
-      // 로그인 시간 업데이트 (실제 환경에서는 서버에서 처리)
-      const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
-      
-      // 임시 로그인 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // 로그인 성공 시 리다이렉트
-      router.push("/admin")
-    } catch (err) {
-      setError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.")
+    } catch (error) {
+      setError('서버 연결에 실패했습니다. 백엔드 서버가 실행 중인지 확인해주세요.');
     } finally {
-      setIsLoading(false)
+      setFormLoading(false);
     }
-  }
+  };
 
   return (
     <div 
@@ -269,6 +177,7 @@ export default function AdminLogin() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="비밀번호를 입력하세요"
+                    autoComplete="current-password"
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     className="pl-10 pr-10 h-12 border-2 transition-all focus:border-2"
@@ -329,7 +238,7 @@ export default function AdminLogin() {
               {/* 로그인 버튼 */}
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={formLoading}
                 className="w-full h-12 text-base font-medium transition-all duration-300 hover:scale-105 disabled:scale-100"
                 style={{ 
                   backgroundColor: theme.primary,
@@ -337,7 +246,7 @@ export default function AdminLogin() {
                   boxShadow: `0 4px 16px ${theme.primary}40`
                 }}
               >
-                {isLoading ? (
+                {formLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>로그인 중...</span>
@@ -373,16 +282,14 @@ export default function AdminLogin() {
               <div className="flex items-center space-x-2 mb-2">
                 <AlertCircle className="w-4 h-4" style={{ color: theme.primary }} />
                 <span className="text-sm font-medium" style={{ color: theme.text }}>
-                  테스트 계정 정보
+                  관리자 계정 정보
                 </span>
               </div>
               <div className="text-xs space-y-1" style={{ color: theme.textMuted }}>
                 <p><strong>최고관리자:</strong> zwadmin / 0045</p>
-                <p><strong>상품관리자:</strong> product / 0045</p>
-                <p><strong>주문관리자:</strong> order / 0045</p>
-                <p><strong>회원관리자:</strong> member / 0045</p>
-                <p><strong>마케팅관리자:</strong> marketing / 0045</p>
-                <p><strong>고객센터담당자:</strong> cssupport / 0045</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  * 실제 운영 환경에서는 이 정보를 제거하세요
+                </p>
               </div>
             </div>
           </CardContent>
@@ -391,7 +298,7 @@ export default function AdminLogin() {
         {/* 하단 정보 */}
         <div className="text-center mt-6">
           <p className="text-xs" style={{ color: theme.textMuted }}>
-            © 2024 쇼핑몰 관리 시스템. 모든 권리 보유.
+            Copyright © 제니스월드 온라인 쇼핑몰. All Rights Reserved. Made by AQMAN
           </p>
         </div>
       </div>
